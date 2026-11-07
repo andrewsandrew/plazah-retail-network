@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plazah - Local Retail Discovery Network</title>
-    <!-- Include Supabase JavaScript Client from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -28,8 +27,23 @@
         }
         p.subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1.1rem;
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         .card-container {
             display: grid;
@@ -64,77 +78,99 @@
 <body>
 
     <h1>Plazah Retail Network</h1>
-    <p class="subtitle">Live database results pulled straight from your Supabase tables.</p>
+    <p class="subtitle">Live database records from your Supabase tables.</p>
+
+    <!-- Functional Search Bar -->
+    <input type="text" id="searchInput" class="search-box" placeholder="Search products or stores..." onkeyup="filterData()">
 
     <div id="app">
-        <div class="loading">Loading products and stores from Supabase...</div>
+        <div class="loading">Loading database records...</div>
     </div>
 
     <script>
-        // Your Verified Supabase Credentials & Project URL
         const SUPABASE_URL = "https://dmspwflndxfdoohkaasn.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aFlz1ZWQTVpzpEfbRAaLEw_huAJnDfN";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let allProducts = [];
+        let allStores = [];
+
         async function fetchPlazahData() {
             const appContainer = document.getElementById('app');
 
             try {
-                // 1. Fetch Products Table
                 const productsRes = await supabaseClient.from('products').select('*');
                 if (productsRes.error) throw productsRes.error;
+                allProducts = productsRes.data || [];
 
-                // 2. Fetch Stores Table
                 const storesRes = await supabaseClient.from('stores').select('*');
                 if (storesRes.error) throw storesRes.error;
+                allStores = storesRes.data || [];
 
-                let html = '';
-
-                // --- PRODUCTS SECTION ---
-                html += '<h2>Products</h2>';
-                if (!productsRes.data || productsRes.data.length === 0) {
-                    html += '<p>No products found in the database.</p>';
-                } else {
-                    html += '<div class="card-container">';
-                    productsRes.data.forEach(row => {
-                        html += `<div class="card">`;
-                        for (const [key, value] of Object.entries(row)) {
-                            html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
-                        }
-                        html += `</div>`;
-                    });
-                    html += '</div>';
-                }
-
-                // --- STORES SECTION ---
-                html += '<h2>Stores</h2>';
-                if (!storesRes.data || storesRes.data.length === 0) {
-                    html += '<p>No stores found in the database.</p>';
-                } else {
-                    html += '<div class="card-container">';
-                    storesRes.data.forEach(row => {
-                        html += `<div class="card">`;
-                        for (const [key, value] of Object.entries(row)) {
-                            html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
-                        }
-                        html += `</div>`;
-                    });
-                    html += '</div>';
-                }
-
-                appContainer.innerHTML = html;
+                renderData(allProducts, allStores);
 
             } catch (err) {
                 console.error("Supabase error:", err);
                 appContainer.innerHTML = `
                     <div class="error-box">
                         <strong>Error loading data:</strong> ${err.message}
-                        <br><br>
-                        <em>Tip: Check your Supabase Table Editor to ensure RLS (Row Level Security) allows public read access if data returns empty.</em>
                     </div>
                 `;
             }
+        }
+
+        function renderData(products, stores) {
+            const appContainer = document.getElementById('app');
+            let html = '';
+
+            // --- PRODUCTS SECTION ---
+            html += '<h2>Products</h2>';
+            if (products.length === 0) {
+                html += '<p style="color: #666;">No products match your search.</p>';
+            } else {
+                html += '<div class="card-container">';
+                products.forEach(row => {
+                    html += `<div class="card">`;
+                    for (const [key, value] of Object.entries(row)) {
+                        html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
+                    }
+                    html += `</div>`;
+                });
+                html += '</div>';
+            }
+
+            // --- STORES SECTION ---
+            html += '<h2 style="margin-top: 40px;">Stores</h2>';
+            if (stores.length === 0) {
+                html += '<p style="color: #666;">No stores match your search.</p>';
+            } else {
+                html += '<div class="card-container">';
+                stores.forEach(row => {
+                    html += `<div class="card">`;
+                    for (const [key, value] of Object.entries(row)) {
+                        html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
+                    }
+                    html += `</div>`;
+                });
+                html += '</div>';
+            }
+
+            appContainer.innerHTML = html;
+        }
+
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            const filteredProducts = allProducts.filter(item => 
+                Object.values(item).some(val => String(val).toLowerCase().includes(query))
+            );
+
+            const filteredStores = allStores.filter(item => 
+                Object.values(item).some(val => String(val).toLowerCase().includes(query))
+            );
+
+            renderData(filteredProducts, filteredStores);
         }
 
         fetchPlazahData();
