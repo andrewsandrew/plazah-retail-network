@@ -6,85 +6,149 @@
     <title>Plazah - Local Retail Discovery Network</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-            color: #333;
-            background-color: #f9f9fb;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-main);
+            background-color: var(--bg);
         }
+
+        header {
+            margin-bottom: 30px;
+        }
+
         h1 {
-            color: #111;
             font-size: 2.2rem;
-            margin-bottom: 6px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.025em;
         }
-        h2 {
-            color: #222;
-            margin-top: 40px;
-            border-bottom: 2px solid #e1e4e8;
-            padding-bottom: 8px;
-        }
+
         p.subtitle {
-            color: #666;
-            margin-bottom: 20px;
+            color: var(--text-muted);
+            margin: 0 0 24px 0;
             font-size: 1.1rem;
         }
+
         .search-box {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             font-size: 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
         }
+
         .search-box:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
         }
-        .card-container {
+
+        section {
+            margin-top: 40px;
+        }
+
+        section h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
         }
+
         .card {
-            background: #ffffff;
-            border: 1px solid #e1e4e8;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card p {
-            margin: 8px 0;
-            font-size: 0.95rem;
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
         }
-        .error-box {
-            background: #ffebe9;
-            border: 1px solid #ff818266;
-            color: #cf222e;
-            padding: 15px;
-            border-radius: 6px;
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f1f5f9;
         }
-        .loading {
-            color: #57606a;
-            font-style: italic;
+
+        .card-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-weight: 600;
             font-size: 1.1rem;
+            margin: 0 0 8px 0;
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 0 12px 0;
+        }
+
+        .store-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-top: auto;
+            width: fit-content;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Plazah Retail Network</h1>
-    <p class="subtitle">Live database records from your Supabase tables.</p>
-
-    <!-- Functional Search Bar -->
-    <input type="text" id="searchInput" class="search-box" placeholder="Search products or stores..." onkeyup="filterData()">
+    <header>
+        <h1>Plazah Retail Network</h1>
+        <p class="subtitle">Discover live inventory from local storefronts.</p>
+        <input type="text" id="searchInput" class="search-box" placeholder="Search products, stores, or categories..." onkeyup="filterData()">
+    </header>
 
     <div id="app">
-        <div class="loading">Loading database records...</div>
+        <p style="color: var(--text-muted);">Loading live storefront records...</p>
     </div>
 
     <script>
@@ -114,7 +178,7 @@
                 console.error("Supabase error:", err);
                 appContainer.innerHTML = `
                     <div class="error-box">
-                        <strong>Error loading data:</strong> ${err.message}
+                        <strong>Error loading database:</strong> ${err.message}
                     </div>
                 `;
             }
@@ -125,36 +189,53 @@
             let html = '';
 
             // --- PRODUCTS SECTION ---
-            html += '<h2>Products</h2>';
+            html += '<section><h2>Products</h2>';
             if (products.length === 0) {
-                html += '<p style="color: #666;">No products match your search.</p>';
+                html += '<p style="color: var(--text-muted);">No matching products found.</p>';
             } else {
-                html += '<div class="card-container">';
-                products.forEach(row => {
-                    html += `<div class="card">`;
-                    for (const [key, value] of Object.entries(row)) {
-                        html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
-                    }
-                    html += `</div>`;
+                html += '<div class="grid">';
+                products.forEach(p => {
+                    const name = p.name || p.product_name || 'Unnamed Product';
+                    const price = p.price ? `$${Number(p.price).toFixed(2)}` : 'Contact for Price';
+                    const img = p.image_url_source || p.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
+
+                    html += `
+                        <div class="card">
+                            <img src="${img}" alt="${name}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Unavailable'">
+                            <div class="card-body">
+                                <h3 class="product-title">${name}</h3>
+                                <div class="product-price">${price}</div>
+                                ${p.store_id ? `<span class="store-badge">Store ID: ${p.store_id}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
                 });
                 html += '</div>';
             }
+            html += '</section>';
 
             // --- STORES SECTION ---
-            html += '<h2 style="margin-top: 40px;">Stores</h2>';
+            html += '<section><h2>Stores</h2>';
             if (stores.length === 0) {
-                html += '<p style="color: #666;">No stores match your search.</p>';
+                html += '<p style="color: var(--text-muted);">No matching stores found.</p>';
             } else {
-                html += '<div class="card-container">';
-                stores.forEach(row => {
-                    html += `<div class="card">`;
-                    for (const [key, value] of Object.entries(row)) {
-                        html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
-                    }
-                    html += `</div>`;
+                html += '<div class="grid">';
+                stores.forEach(s => {
+                    const storeName = s.name || s.store_name || 'Retail Store';
+                    const location = s.location || s.address || 'Local Partner';
+
+                    html += `
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="product-title">${storeName}</h3>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 12px 0;">📍 ${location}</p>
+                            </div>
+                        </div>
+                    `;
                 });
                 html += '</div>';
             }
+            html += '</section>';
 
             appContainer.innerHTML = html;
         }
