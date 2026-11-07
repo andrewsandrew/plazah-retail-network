@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plazah - Local Retail Discovery Network</title>
+    <!-- Include Supabase JavaScript Client from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #333;
+            background-color: #f9f9fb;
+        }
+        h1 {
+            color: #111;
+            font-size: 2.2rem;
+            margin-bottom: 6px;
+        }
+        h2 {
+            color: #222;
+            margin-top: 40px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 8px;
+        }
+        p.subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .card p {
+            margin: 8px 0;
+            font-size: 0.95rem;
+        }
+        .error-box {
+            background: #ffebe9;
+            border: 1px solid #ff818266;
+            color: #cf222e;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .loading {
+            color: #57606a;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Plazah Retail Network</h1>
+    <p class="subtitle">Live database results pulled straight from your Supabase tables.</p>
+
+    <div id="app">
+        <div class="loading">Loading products and stores from Supabase...</div>
+    </div>
+
+    <script>
+        // Your Verified Supabase Credentials & Project URL
+        const SUPABASE_URL = "https://dmspwflndxfdoohkaasn.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_aFlz1ZWQTVpzpEfbRAaLEw_huAJnDfN";
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fetchPlazahData() {
+            const appContainer = document.getElementById('app');
+
+            try {
+                // 1. Fetch Products Table
+                const productsRes = await supabaseClient.from('products').select('*');
+                if (productsRes.error) throw productsRes.error;
+
+                // 2. Fetch Stores Table
+                const storesRes = await supabaseClient.from('stores').select('*');
+                if (storesRes.error) throw storesRes.error;
+
+                let html = '';
+
+                // --- PRODUCTS SECTION ---
+                html += '<h2>Products</h2>';
+                if (!productsRes.data || productsRes.data.length === 0) {
+                    html += '<p>No products found in the database.</p>';
+                } else {
+                    html += '<div class="card-container">';
+                    productsRes.data.forEach(row => {
+                        html += `<div class="card">`;
+                        for (const [key, value] of Object.entries(row)) {
+                            html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
+                        }
+                        html += `</div>`;
+                    });
+                    html += '</div>';
+                }
+
+                // --- STORES SECTION ---
+                html += '<h2>Stores</h2>';
+                if (!storesRes.data || storesRes.data.length === 0) {
+                    html += '<p>No stores found in the database.</p>';
+                } else {
+                    html += '<div class="card-container">';
+                    storesRes.data.forEach(row => {
+                        html += `<div class="card">`;
+                        for (const [key, value] of Object.entries(row)) {
+                            html += `<p><strong>${key}:</strong> ${value !== null ? value : 'N/A'}</p>`;
+                        }
+                        html += `</div>`;
+                    });
+                    html += '</div>';
+                }
+
+                appContainer.innerHTML = html;
+
+            } catch (err) {
+                console.error("Supabase error:", err);
+                appContainer.innerHTML = `
+                    <div class="error-box">
+                        <strong>Error loading data:</strong> ${err.message}
+                        <br><br>
+                        <em>Tip: Check your Supabase Table Editor to ensure RLS (Row Level Security) allows public read access if data returns empty.</em>
+                    </div>
+                `;
+            }
+        }
+
+        fetchPlazahData();
+    </script>
+
+</body>
+</html>
