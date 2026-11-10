@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plazah - Local Retail Discovery Network</title>
+    <title>Plazah - 5-Column Retail Network</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -16,16 +16,16 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 1100px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1400px; /* Expanded container width to fit 5 crisp columns */
             margin: 0 auto;
-            padding: 40px 20px;
-            color: var(--text-main);
+            padding: 20px;
             background-color: var(--bg);
+            color: var(--text-main);
         }
 
         header {
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         h1 {
@@ -37,7 +37,7 @@
 
         p.subtitle {
             color: var(--text-muted);
-            margin: 0 0 24px 0;
+            margin: 0 0 20px 0;
             font-size: 1.1rem;
         }
 
@@ -46,11 +46,12 @@
             padding: 14px 18px;
             font-size: 1rem;
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 12px;
             box-sizing: border-box;
             outline: none;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
+            margin-bottom: 20px;
         }
 
         .search-box:focus {
@@ -58,21 +59,70 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
         }
 
-        section {
-            margin-top: 40px;
+        /* VISUAL SHORTCUT BUTTONS BAR */
+        .shortcut-bar {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 30px;
+            scrollbar-width: thin;
         }
 
-        section h2 {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--border);
+        .shortcut-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 6px 16px 6px 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+            user-select: none;
         }
 
-        .grid {
+        .shortcut-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .shortcut-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .shortcut-img {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #cbd5e1;
+        }
+
+        /* 5-COLUMN RESPONSIVE GRID LAYOUT */
+        .grid-5-col {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(5, 1fr); /* Default 5 columns */
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 1200px) {
+            .grid-5-col { grid-template-columns: repeat(4, 1fr); } /* 4 cols on smaller laptops */
+        }
+        @media (max-width: 900px) {
+            .grid-5-col { grid-template-columns: repeat(3, 1fr); } /* 3 cols on tablets */
+        }
+        @media (max-width: 600px) {
+            .grid-5-col { grid-template-columns: repeat(2, 1fr); gap: 12px; } /* 2 cols on mobile phones */
         }
 
         .card {
@@ -88,7 +138,7 @@
 
         .card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08);
         }
 
         .card-img {
@@ -99,7 +149,7 @@
         }
 
         .card-body {
-            padding: 16px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
@@ -107,35 +157,28 @@
 
         .product-title {
             font-weight: 600;
-            font-size: 1.1rem;
-            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            margin: 0 0 6px 0;
+            line-height: 1.3;
+            /* Truncate long titles cleanly to 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .product-price {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--primary);
-            margin: 0 0 12px 0;
-        }
-
-        .store-badge {
-            display: inline-block;
-            background: #eff6ff;
-            color: #1d4ed8;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
             margin-top: auto;
-            width: fit-content;
         }
 
-        .error-box {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 16px;
-            border-radius: 8px;
+        .loading-indicator {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-weight: 500;
         }
     </style>
 </head>
@@ -144,118 +187,143 @@
     <header>
         <h1>Plazah Retail Network</h1>
         <p class="subtitle">Discover live inventory from local storefronts.</p>
-        <input type="text" id="searchInput" class="search-box" placeholder="Search products, stores, or categories..." onkeyup="filterData()">
+        
+        <input type="text" id="searchInput" class="search-box" placeholder="Search products, stores, or categories..." onkeyup="handleSearch()">
+        
+        <!-- VISUAL SHORTCUT BUTTONS -->
+        <div class="shortcut-bar">
+            <button class="shortcut-btn active" onclick="applyShortcut('', this)">
+                <span style="padding-left: 10px;">✨ All Items</span>
+            </button>
+            <button class="shortcut-btn" onclick="applyShortcut('apparel', this)">
+                <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=100&q=80" class="shortcut-img" alt="Apparel">
+                Apparel
+            </button>
+            <button class="shortcut-btn" onclick="applyShortcut('shoes', this)">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&q=80" class="shortcut-img" alt="Footwear">
+                Footwear
+            </button>
+            <button class="shortcut-btn" onclick="applyShortcut('boutique', this)">
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&q=80" class="shortcut-img" alt="Stores">
+                Local Stores
+            </button>
+            <button class="shortcut-btn" onclick="applyShortcut('home', this)">
+                <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=100&q=80" class="shortcut-img" alt="Home Goods">
+                Home Goods
+            </button>
+        </div>
     </header>
 
-    <div id="app">
-        <p style="color: var(--text-muted);">Loading live storefront records...</p>
-    </div>
+    <!-- 5-COLUMN GRID CONTAINER -->
+    <div id="gridContainer" class="grid-5-col"></div>
+
+    <div id="loader" class="loading-indicator">Loading products...</div>
 
     <script>
         const SUPABASE_URL = "https://dmspwflndxfdoohkaasn.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aFlz1ZWQTVpzpEfbRAaLEw_huAJnDfN";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let allProducts = [];
-        let allStores = [];
+        const PAGE_SIZE = 25; // Fetches 25 items per scroll (multiple of 5)
+        let currentPage = 0;
+        let isLoading = false;
+        let hasMore = true;
+        let searchQuery = '';
 
-        async function fetchPlazahData() {
-            const appContainer = document.getElementById('app');
+        async function loadProducts(reset = false) {
+            if (isLoading || (!hasMore && !reset)) return;
+            isLoading = true;
+
+            if (reset) {
+                currentPage = 0;
+                hasMore = true;
+                document.getElementById('gridContainer').innerHTML = '';
+                document.getElementById('loader').innerText = 'Loading products...';
+            }
+
+            const from = currentPage * PAGE_SIZE;
+            const to = from + PAGE_SIZE - 1;
 
             try {
-                const productsRes = await supabaseClient.from('products').select('*');
-                if (productsRes.error) throw productsRes.error;
-                allProducts = productsRes.data || [];
+                let query = supabaseClient.from('products').select('*').range(from, to);
 
-                const storesRes = await supabaseClient.from('stores').select('*');
-                if (storesRes.error) throw storesRes.error;
-                allStores = storesRes.data || [];
+                if (searchQuery.trim() !== '') {
+                    query = query.ilike('name', `%${searchQuery}%`);
+                }
 
-                renderData(allProducts, allStores);
+                const { data, error } = await query;
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    if (reset) {
+                        document.getElementById('gridContainer').innerHTML = '<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center;">No products found.</p>';
+                    }
+                    hasMore = false;
+                    document.getElementById('loader').innerText = "You've reached the end!";
+                    return;
+                }
+
+                if (data.length < PAGE_SIZE) {
+                    hasMore = false;
+                    document.getElementById('loader').innerText = "All items loaded.";
+                }
+
+                renderBatch(data);
+                currentPage++;
 
             } catch (err) {
-                console.error("Supabase error:", err);
-                appContainer.innerHTML = `
-                    <div class="error-box">
-                        <strong>Error loading database:</strong> ${err.message}
+                console.error("Error fetching items:", err);
+                document.getElementById('loader').innerText = "Error loading data.";
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function renderBatch(products) {
+            const container = document.getElementById('gridContainer');
+
+            products.forEach(p => {
+                const name = p.name || p.product_name || 'Unnamed Product';
+                const price = p.price ? `$${Number(p.price).toFixed(2)}` : 'Contact Store';
+                const img = p.image_url_source || p.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
+
+                const cardHtml = `
+                    <div class="card">
+                        <img src="${img}" alt="${name}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Unavailable'">
+                        <div class="card-body">
+                            <h3 class="product-title">${name}</h3>
+                            <div class="product-price">${price}</div>
+                        </div>
                     </div>
                 `;
-            }
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
         }
 
-        function renderData(products, stores) {
-            const appContainer = document.getElementById('app');
-            let html = '';
-
-            // --- PRODUCTS SECTION ---
-            html += '<section><h2>Products</h2>';
-            if (products.length === 0) {
-                html += '<p style="color: var(--text-muted);">No matching products found.</p>';
-            } else {
-                html += '<div class="grid">';
-                products.forEach(p => {
-                    const name = p.name || p.product_name || 'Unnamed Product';
-                    const price = p.price ? `$${Number(p.price).toFixed(2)}` : 'Contact for Price';
-                    const img = p.image_url_source || p.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
-
-                    html += `
-                        <div class="card">
-                            <img src="${img}" alt="${name}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Unavailable'">
-                            <div class="card-body">
-                                <h3 class="product-title">${name}</h3>
-                                <div class="product-price">${price}</div>
-                                ${p.store_id ? `<span class="store-badge">Store ID: ${p.store_id}</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-            html += '</section>';
-
-            // --- STORES SECTION ---
-            html += '<section><h2>Stores</h2>';
-            if (stores.length === 0) {
-                html += '<p style="color: var(--text-muted);">No matching stores found.</p>';
-            } else {
-                html += '<div class="grid">';
-                stores.forEach(s => {
-                    const storeName = s.name || s.store_name || 'Retail Store';
-                    const location = s.location || s.address || 'Local Partner';
-
-                    html += `
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="product-title">${storeName}</h3>
-                                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 4px 0 12px 0;">📍 ${location}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            }
-            html += '</section>';
-
-            appContainer.innerHTML = html;
+        function applyShortcut(term, btnElement) {
+            document.querySelectorAll('.shortcut-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            document.getElementById('searchInput').value = term;
+            searchQuery = term;
+            loadProducts(true);
         }
 
-        function filterData() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-
-            const filteredProducts = allProducts.filter(item => 
-                Object.values(item).some(val => String(val).toLowerCase().includes(query))
-            );
-
-            const filteredStores = allStores.filter(item => 
-                Object.values(item).some(val => String(val).toLowerCase().includes(query))
-            );
-
-            renderData(filteredProducts, filteredStores);
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            loadProducts(true);
         }
 
-        fetchPlazahData();
+        // INFINITE SCROLL LISTENER
+        window.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            if (scrollTop + clientHeight >= scrollHeight - 350) {
+                loadProducts();
+            }
+        });
+
+        // Initial Load
+        loadProducts();
     </script>
-
 </body>
 </html>
