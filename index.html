@@ -3,327 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plazah - 5-Column Retail Network</title>
+    <title>Plazah - Local Retail Discovery Network</title>
+    <!-- Include Supabase JavaScript Client from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 1400px; /* Expanded container width to fit 5 crisp columns */
-            margin: 0 auto;
-            padding: 20px;
-            background-color: var(--bg);
-            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #333;
+            background-color: #f9f9fb;
         }
-
-        header {
-            margin-bottom: 24px;
-        }
-
         h1 {
+            color: #111;
             font-size: 2.2rem;
-            font-weight: 800;
-            margin: 0 0 8px 0;
-            letter-spacing: -0.025em;
+            margin-bottom: 6px;
         }
-
+        h2 {
+            color: #222;
+            margin-top: 40px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 8px;
+        }
         p.subtitle {
-            color: var(--text-muted);
-            margin: 0 0 20px 0;
+            color: #666;
+            margin-bottom: 30px;
             font-size: 1.1rem;
         }
-
-        .search-box {
-            width: 100%;
-            padding: 14px 18px;
-            font-size: 1rem;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-sizing: border-box;
-            outline: none;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-            margin-bottom: 20px;
-        }
-
-        .search-box:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-        }
-
-        /* VISUAL SHORTCUT BUTTONS BAR */
-        .shortcut-bar {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 12px;
-            margin-bottom: 30px;
-            scrollbar-width: thin;
-        }
-
-        .shortcut-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 30px;
-            padding: 6px 16px 6px 6px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-main);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-
-        .shortcut-btn:hover {
-            border-color: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        .shortcut-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-        }
-
-        .shortcut-img {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            object-fit: cover;
-            background-color: #cbd5e1;
-        }
-
-        /* 5-COLUMN RESPONSIVE GRID LAYOUT */
-        .grid-5-col {
+        .card-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* Default 5 columns */
-            gap: 16px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
-
-        /* RESPONSIVE BREAKPOINTS */
-        @media (max-width: 1200px) {
-            .grid-5-col { grid-template-columns: repeat(4, 1fr); } /* 4 cols on smaller laptops */
-        }
-        @media (max-width: 900px) {
-            .grid-5-col { grid-template-columns: repeat(3, 1fr); } /* 3 cols on tablets */
-        }
-        @media (max-width: 600px) {
-            .grid-5-col { grid-template-columns: repeat(2, 1fr); gap: 12px; } /* 2 cols on mobile phones */
-        }
-
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08);
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.15rem;
+            color: #111;
         }
-
-        .card-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #f1f5f9;
-        }
-
-        .card-body {
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .product-title {
-            font-weight: 600;
+        .card p {
+            margin: 6px 0;
             font-size: 0.95rem;
-            margin: 0 0 6px 0;
-            line-height: 1.3;
-            /* Truncate long titles cleanly to 2 lines */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            color: #444;
         }
-
-        .product-price {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-top: auto;
-        }
-
-        .loading-indicator {
-            text-align: center;
-            padding: 24px;
-            color: var(--text-muted);
+        .card a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #0969da;
+            text-decoration: none;
             font-weight: 500;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
+        .error-box {
+            background: #ffebe9;
+            border: 1px solid #ff818266;
+            color: #cf222e;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .loading {
+            color: #57606a;
+            font-style: italic;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Plazah Retail Network</h1>
-        <p class="subtitle">Discover live inventory from local storefronts.</p>
-        
-        <input type="text" id="searchInput" class="search-box" placeholder="Search products, stores, or categories..." onkeyup="handleSearch()">
-        
-        <!-- VISUAL SHORTCUT BUTTONS -->
-        <div class="shortcut-bar">
-            <button class="shortcut-btn active" onclick="applyShortcut('', this)">
-                <span style="padding-left: 10px;">✨ All Items</span>
-            </button>
-            <button class="shortcut-btn" onclick="applyShortcut('apparel', this)">
-                <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=100&q=80" class="shortcut-img" alt="Apparel">
-                Apparel
-            </button>
-            <button class="shortcut-btn" onclick="applyShortcut('shoes', this)">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&q=80" class="shortcut-img" alt="Footwear">
-                Footwear
-            </button>
-            <button class="shortcut-btn" onclick="applyShortcut('boutique', this)">
-                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&q=80" class="shortcut-img" alt="Stores">
-                Local Stores
-            </button>
-            <button class="shortcut-btn" onclick="applyShortcut('home', this)">
-                <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=100&q=80" class="shortcut-img" alt="Home Goods">
-                Home Goods
-            </button>
-        </div>
-    </header>
+    <h1>Plazah Retail Network</h1>
+    <p class="subtitle">Verified independent brick-and-mortar retailers across the U.S.</p>
 
-    <!-- 5-COLUMN GRID CONTAINER -->
-    <div id="gridContainer" class="grid-5-col"></div>
-
-    <div id="loader" class="loading-indicator">Loading products...</div>
+    <div id="app">
+        <div class="loading">Loading stores from Supabase...</div>
+    </div>
 
     <script>
+        // Your Verified Supabase Credentials & Project URL
         const SUPABASE_URL = "https://dmspwflndxfdoohkaasn.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aFlz1ZWQTVpzpEfbRAaLEw_huAJnDfN";
+
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const PAGE_SIZE = 25; // Fetches 25 items per scroll (multiple of 5)
-        let currentPage = 0;
-        let isLoading = false;
-        let hasMore = true;
-        let searchQuery = '';
-
-        async function loadProducts(reset = false) {
-            if (isLoading || (!hasMore && !reset)) return;
-            isLoading = true;
-
-            if (reset) {
-                currentPage = 0;
-                hasMore = true;
-                document.getElementById('gridContainer').innerHTML = '';
-                document.getElementById('loader').innerText = 'Loading products...';
-            }
-
-            const from = currentPage * PAGE_SIZE;
-            const to = from + PAGE_SIZE - 1;
+        async function fetchPlazahData() {
+            const appContainer = document.getElementById('app');
 
             try {
-                let query = supabaseClient.from('products').select('*').range(from, to);
+                // Fetch up to 100 Stores from Supabase
+                const storesRes = await supabaseClient
+                    .from('stores')
+                    .select('*')
+                    .limit(100);
 
-                if (searchQuery.trim() !== '') {
-                    query = query.ilike('name', `%${searchQuery}%`);
+                if (storesRes.error) throw storesRes.error;
+
+                let html = `<h2>Verified Retailers (${storesRes.data.length})</h2>`;
+
+                if (!storesRes.data || storesRes.data.length === 0) {
+                    html += '<p>No stores found in the database. Check that RLS allows public SELECT access.</p>';
+                } else {
+                    html += '<div class="card-container">';
+                    storesRes.data.forEach(store => {
+                        const location = [store.city, store.state, store.postal_code]
+                            .filter(Boolean)
+                            .join(', ');
+
+                        html += `
+                            <div class="card">
+                                <h3>${store.company_name || store.domain}</h3>
+                                <p><strong>Location:</strong> ${location || 'N/A'}</p>
+                                <p><strong>Category:</strong> ${store.primary_business || store.vertical || 'Retail'}</p>
+                                <p><strong>Phone:</strong> ${store.phone || 'N/A'}</p>
+                                <p><strong>Platform:</strong> ${store.platform || 'N/A'}</p>
+                                ${store.website_url ? `<a href="${store.website_url}" target="_blank" rel="noopener">Visit Storefront &rarr;</a>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
                 }
 
-                const { data, error } = await query;
-                if (error) throw error;
-
-                if (!data || data.length === 0) {
-                    if (reset) {
-                        document.getElementById('gridContainer').innerHTML = '<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center;">No products found.</p>';
-                    }
-                    hasMore = false;
-                    document.getElementById('loader').innerText = "You've reached the end!";
-                    return;
-                }
-
-                if (data.length < PAGE_SIZE) {
-                    hasMore = false;
-                    document.getElementById('loader').innerText = "All items loaded.";
-                }
-
-                renderBatch(data);
-                currentPage++;
+                appContainer.innerHTML = html;
 
             } catch (err) {
-                console.error("Error fetching items:", err);
-                document.getElementById('loader').innerText = "Error loading data.";
-            } finally {
-                isLoading = false;
-            }
-        }
-
-        function renderBatch(products) {
-            const container = document.getElementById('gridContainer');
-
-            products.forEach(p => {
-                const name = p.name || p.product_name || 'Unnamed Product';
-                const price = p.price ? `$${Number(p.price).toFixed(2)}` : 'Contact Store';
-                const img = p.image_url_source || p.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
-
-                const cardHtml = `
-                    <div class="card">
-                        <img src="${img}" alt="${name}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Unavailable'">
-                        <div class="card-body">
-                            <h3 class="product-title">${name}</h3>
-                            <div class="product-price">${price}</div>
-                        </div>
+                console.error("Supabase error:", err);
+                appContainer.innerHTML = `
+                    <div class="error-box">
+                        <strong>Error loading data:</strong> ${err.message}
+                        <br><br>
+                        <em>Tip: Check your Supabase Table Editor to ensure RLS (Row Level Security) allows public read access if data returns empty.</em>
                     </div>
                 `;
-                container.insertAdjacentHTML('beforeend', cardHtml);
-            });
-        }
-
-        function applyShortcut(term, btnElement) {
-            document.querySelectorAll('.shortcut-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            
-            document.getElementById('searchInput').value = term;
-            searchQuery = term;
-            loadProducts(true);
-        }
-
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value;
-            loadProducts(true);
-        }
-
-        // INFINITE SCROLL LISTENER
-        window.addEventListener('scroll', () => {
-            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-            if (scrollTop + clientHeight >= scrollHeight - 350) {
-                loadProducts();
             }
-        });
+        }
 
-        // Initial Load
-        loadProducts();
+        fetchPlazahData();
     </script>
+
 </body>
 </html>
