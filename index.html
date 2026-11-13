@@ -3,37 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plazah - Local Retail Discovery Network</title>
+    <title>Plazah - U.S. Independent Retail Directory</title>
     <!-- Include Supabase JavaScript Client from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 40px auto;
             padding: 0 20px;
             color: #333;
             background-color: #f9f9fb;
         }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
         h1 {
             color: #111;
-            font-size: 2.2rem;
-            margin-bottom: 6px;
-        }
-        h2 {
-            color: #222;
-            margin-top: 40px;
-            border-bottom: 2px solid #e1e4e8;
-            padding-bottom: 8px;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
         }
         p.subtitle {
             color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
+            margin-top: 0;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 1.05rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #searchInput:focus {
+            border-color: #0969da;
+            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+        }
+        .results-count {
+            text-align: center;
+            color: #57606a;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
         }
         .card-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
         .card {
@@ -42,6 +64,9 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .card h3 {
             margin: 0 0 10px 0;
@@ -50,12 +75,12 @@
         }
         .card p {
             margin: 6px 0;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             color: #444;
         }
         .card a {
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 12px;
             color: #0969da;
             text-decoration: none;
             font-weight: 500;
@@ -69,82 +94,125 @@
             color: #cf222e;
             padding: 15px;
             border-radius: 6px;
+            max-width: 600px;
+            margin: 20px auto;
         }
         .loading {
+            text-align: center;
             color: #57606a;
             font-style: italic;
             font-size: 1.1rem;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Plazah Retail Network</h1>
-    <p class="subtitle">Verified independent brick-and-mortar retailers across the U.S.</p>
+    <header>
+        <h1>Plazah Retail Network</h1>
+        <p class="subtitle">Discover verified independent brick-and-mortar retailers across the United States.</p>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by store name, city, or state (e.g., Austin, TX)...">
+        </div>
+    </header>
 
+    <div id="resultsCount" class="results-count"></div>
     <div id="app">
-        <div class="loading">Loading stores from Supabase...</div>
+        <div class="loading">Connecting to national directory...</div>
     </div>
 
     <script>
-        // Your Verified Supabase Credentials & Project URL
+        // Supabase Credentials
         const SUPABASE_URL = "https://dmspwflndxfdoohkaasn.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aFlz1ZWQTVpzpEfbRAaLEw_huAJnDfN";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function fetchPlazahData() {
-            const appContainer = document.getElementById('app');
+        const searchInput = document.getElementById('searchInput');
+        const appContainer = document.getElementById('app');
+        const resultsCountContainer = document.getElementById('resultsCount');
+
+        let searchTimeout = null;
+
+        // Fetch stores from Supabase based on search query
+        async function fetchStores(query = '') {
+            appContainer.innerHTML = '<div class="loading">Searching retailers...</div>';
+            resultsCountContainer.innerHTML = '';
 
             try {
-                // Fetch up to 100 Stores from Supabase
-                const storesRes = await supabaseClient
-                    .from('stores')
-                    .select('*')
-                    .limit(100);
+                let dbQuery = supabaseClient.from('stores').select('*');
 
-                if (storesRes.error) throw storesRes.error;
-
-                let html = `<h2>Verified Retailers (${storesRes.data.length})</h2>`;
-
-                if (!storesRes.data || storesRes.data.length === 0) {
-                    html += '<p>No stores found in the database. Check that RLS allows public SELECT access.</p>';
-                } else {
-                    html += '<div class="card-container">';
-                    storesRes.data.forEach(store => {
-                        const location = [store.city, store.state, store.postal_code]
-                            .filter(Boolean)
-                            .join(', ');
-
-                        html += `
-                            <div class="card">
-                                <h3>${store.company_name || store.domain}</h3>
-                                <p><strong>Location:</strong> ${location || 'N/A'}</p>
-                                <p><strong>Category:</strong> ${store.primary_business || store.vertical || 'Retail'}</p>
-                                <p><strong>Phone:</strong> ${store.phone || 'N/A'}</p>
-                                <p><strong>Platform:</strong> ${store.platform || 'N/A'}</p>
-                                ${store.website_url ? `<a href="${store.website_url}" target="_blank" rel="noopener">Visit Storefront &rarr;</a>` : ''}
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
+                if (query.trim() !== '') {
+                    // Search across company name, city, or state
+                    const cleanQuery = query.trim();
+                    dbQuery = dbQuery.or(`company_name.ilike.%${cleanQuery}%,city.ilike.%${cleanQuery}%,state.ilike.%${cleanQuery}%`);
                 }
 
-                appContainer.innerHTML = html;
+                // Limit results for optimal browser performance
+                const { data: stores, error } = await dbQuery.limit(60);
+
+                if (error) throw error;
+
+                renderStores(stores, query);
 
             } catch (err) {
                 console.error("Supabase error:", err);
                 appContainer.innerHTML = `
                     <div class="error-box">
-                        <strong>Error loading data:</strong> ${err.message}
-                        <br><br>
-                        <em>Tip: Check your Supabase Table Editor to ensure RLS (Row Level Security) allows public read access if data returns empty.</em>
+                        <strong>Error loading directory:</strong> ${err.message}
                     </div>
                 `;
             }
         }
 
-        fetchPlazahData();
+        // Render store cards to the page
+        function renderStores(stores, query) {
+            if (!stores || stores.length === 0) {
+                resultsCountContainer.innerHTML = `Found 0 results for "${query}"`;
+                appContainer.innerHTML = '<p style="text-align: center; color: #666; margin-top: 40px;">No matching independent retailers found. Try a different city, state, or name.</p>';
+                return;
+            }
+
+            resultsCountContainer.innerHTML = `Showing ${stores.length} retailers${query ? ` matching "${query}"` : ''}`;
+
+            let html = '<div class="card-container">';
+            stores.forEach(store => {
+                const location = [store.city, store.state, store.postal_code]
+                    .filter(Boolean)
+                    .join(', ');
+
+                html += `
+                    <div class="card">
+                        <div>
+                            <h3>${store.company_name || store.domain}</h3>
+                            <p><strong>Location:</strong> ${location || 'N/A'}</p>
+                            <p><strong>Category:</strong> ${store.primary_business || store.vertical || 'Independent Retail'}</p>
+                            <p><strong>Phone:</strong> ${store.phone || 'N/A'}</p>
+                            <p><strong>Platform:</strong> ${store.platform || 'N/A'}</p>
+                        </div>
+                        <div>
+                            ${store.website_url ? `<a href="${store.website_url}" target="_blank" rel="noopener">Visit Storefront &rarr;</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            appContainer.innerHTML = html;
+        }
+
+        // Debounce search input so it doesn't query on every single keystroke instantly
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value;
+            searchTimeout = setTimeout(() => {
+                fetchStores(query);
+            }, 300); // Wait 300ms after user stops typing
+        });
+
+        // Load initial store batch on page load
+        fetchStores();
     </script>
 
 </body>
